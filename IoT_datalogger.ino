@@ -67,7 +67,7 @@ double H = 0;     // Humidity
 
 /*--------creat 3 files for logs ---------*/
 char dataFileName[] =   "logdata.txt"; 
-char trialsFileName[] = "logtrials.txt"; 
+char trialsFileName[] = "trials.txt"; 
 char usersFileName[] =  "userinfo.txt"; 
 /*---------------------------------------*/
 
@@ -103,13 +103,13 @@ void setup() {
 /*----------- see if the card is present and can be initialized: --------*/ 
 
 
-  Serial.println(F("BMP280 test"));
-    if (!bme.begin()) {  
-    Serial.println(F("Could not find a valid BMP280 sensor, check wiring!"));
-    while (1);
-  }
-  
-  Serial.println("BMP initialized."); 
+//  Serial.println(F("BMP280 test"));
+//    if (!bme.begin()) {  
+//    Serial.println(F("Could not find a valid BMP280 sensor, check wiring!"));
+//    while (1);
+//  }
+//  
+//  Serial.println("BMP initialized."); 
 
   /*-------------- initialize files------------*/
   
@@ -122,12 +122,12 @@ void setup() {
     dataLog.close();
     
             /*-----trials file------------*/
-    usersLog = SD.open(trialsFileName, FILE_WRITE);  //users fil
-    usersLog.close();
+    trialsLog = SD.open(trialsFileName, FILE_WRITE);  //users fil
+    trialsLog.close();
     
                /*-----users data file------------*/
-    trialsLog= SD.open(usersFileName, FILE_WRITE); //trials file
-    trialsLog.close();
+    usersLog= SD.open(usersFileName, FILE_WRITE); //trials file
+    usersLog.close();
 
   /*---------------------------------------------*/
 
