@@ -87,7 +87,7 @@ File trialsLog;
 File usersLog;
 /*-------------------------------------*/
 
-Adafruit_BMP280 bme;  //creat bme object, 
+Adafruit_BMP280 bmp;  //creat bmp object, 
 
 
 void setup() {
@@ -105,7 +105,7 @@ void setup() {
   Serial.print("Initializing SD card...");
   if (!SD.begin(chipSelect)) {
     Serial.println("Card failed, or not present");  // don't do anything more:
-    return;
+    while(1);
   }
   Serial.println("card initialized.");
 
@@ -113,7 +113,7 @@ void setup() {
 
 
 //  Serial.println(F("BMP280 test"));
-//    if (!bme.begin()) {  
+//    if (!bmp.begin()) {  
 //    Serial.println(F("Could not find a valid BMP280 sensor, check wiring!"));
 //    while (1);
 //  }
@@ -175,9 +175,9 @@ void getSensorsData(){
   String dataString = "";
   
   /*--------- read sensor values and append to the string:-----------*/
-   T = bme.readTemperature();                      // in Cْ
-   P = bme.readPressure()/100.0F ;                 // in hPa
-   A = bme.readAltitude(SeaLevel);                 // in m
+   T = bmp.readTemperature();                      // in Cْ
+   P = bmp.readPressure()/100.0F ;                 // in hPa
+   A = bmp.readAltitude(SeaLevel);                 // in m
 
   dataString=  String(T)+","+String(P)+","+String(A);    
   
