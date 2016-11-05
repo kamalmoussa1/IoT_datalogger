@@ -8,10 +8,10 @@
 
  The circuit:
  * SD card attached to SPI bus as follows:
- ** MOSI - pin 11
- ** MISO - pin 12
- ** CLK - pin 13
- ** CS - pin 4
+ ** MOSI(Master Out Slave In)  - pin 11
+ ** MISO(Master In Slave Out)- pin 12
+ ** SCK(Serial Clock) - pin 13
+ ** CS - pin 10
  
  * Keypad attatched to digital pins D9-D2 
  
@@ -20,8 +20,8 @@
  ** SCL - pin A5
  
 
+By: kamal Moussa
 ---------
- by kamal Moussa
  
  */
  
@@ -49,6 +49,10 @@ char keymap[Rows][Cols]=
 {'7', '8', '9', 'C'},
 {'*', '0', '#', 'D'}
 };
+
+String password="";
+String user="";
+int x=0;
       /*------pins connections------*/
 byte rowPins[Rows] = {9,8,7,6}; //D9-D6 :: connect to the row pinouts of the keypad
 byte colPins[Cols] = {5,4,3,2}; //D5-D2 :: connect to the column pinouts of the keypad
@@ -64,6 +68,11 @@ double A = 0;     // Altitude
 double H = 0;     // Humidity  
 /*---------------------------------------*/
 
+
+/*
+ FILE NAMING NOTE:: 
+ FAT file systems have a limitation when it comes to naming conventions. You must use the 8.3 format; 8 characters or fewer and 3character extension 
+*/
 
 /*--------creat 3 files for logs ---------*/
 char dataFileName[] =   "logdata.txt"; 
@@ -124,16 +133,22 @@ void setup() {
             /*-----trials file------------*/
     trialsLog = SD.open(trialsFileName, FILE_WRITE);  //users fil
     trialsLog.close();
-    
-               /*-----users data file------------*/
-    usersLog= SD.open(usersFileName, FILE_WRITE); //trials file
-    usersLog.close();
 
   /*---------------------------------------------*/
 
 
-   verifyUser();
-   Serial.println("Done");
+   if(verifyUser()){
+   Serial.print("Welcome, ");
+   Serial.println(user);
+   /*
+    * write user name to esp 
+    * 
+    * 
+    */
+   }
+   else{
+    Serial.print(F("Not allowed"));
+   }
 
 }
 
@@ -202,30 +217,62 @@ void savedata(){
 
 
 /*-----------verify user data against pre-verified users data-------------------*/
- void verifyUser(){  
+ bool verifyUser(){  
   
-  /*------------ Code to verify users -----------*/
-  
-  String password = getPassword();
+     String inputPass = getPassword();
         
     usersLog = SD.open(usersFileName);    
     trialsLog =SD.open(trialsFileName, FILE_WRITE);  
     
       if (usersLog) {
+        while (usersLog.available()) {
+          String myline=usersLog.readStringUntil(',');
+          String tempsupline = myline;
+          if(x==1){
+            user =tempsupline;
+            x=0;
+            break;
 
-        /* read and compare */
-
-
-      }
+            }
+          if(tempsupline==inputPass){
+            x=1;
+            password =tempsupline;
+            trialsLog.print(password);
+            trialsLog.print("       "); 
+            trialsLog.println("P"); 
+            }
+          else{
+            
+            x=0;
+            }
+      
+         }
 
       usersLog.close();
-      trialsLog.flush();
-      trialsLog.close();
-      
-//    Serial.print("Verified user with password:"); Serial.println(password);
+         if(password==""){
+            trialsLog.print(inputPass);
+            trialsLog.print("       "); 
+            trialsLog.println("F"); 
+            Serial.println("not matched");
+            
+            trialsLog.flush();
+            trialsLog.close();
+    
+            return false;
+         }
+         else{
+            Serial.print("Pssword: "); Serial.println(password);
+            Serial.print("User: "); Serial.println(user);
+          return true;
+         }
+ 
+  } 
+  else {
+    Serial.println("error opening test.txt");
+  }
+
 
 }
-
 
 /*-------------get password as an inout from the keypad-------------*/
 String getPassword(){
