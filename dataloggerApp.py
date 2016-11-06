@@ -1,7 +1,7 @@
 '''
 Data Logger V0.1 Demo  :: (GUI and Plotting)
 
-Autour: Kamal Moussa
+Author: Kamal Moussa
 Created 5 Nov 2016
 
 '''
@@ -30,15 +30,22 @@ from matplotlib.backends.backend_qt4agg import (
 
 import matplotlib.pyplot as plt
 
+begin = 0
 
 class Demo(QtGui.QWidget):
+
 
     def __init__(self):
         super(Demo, self).__init__()
 
         self.initUI()
+
         self.connectButton.clicked.connect(self.client_send_message)
 
+
+
+    # def start_server(self):
+        # ip_address
 
 
     def initUI(self):
@@ -145,26 +152,21 @@ class Demo(QtGui.QWidget):
         self.AltPlot.set_ylabel('A (m)')
 
 
-
+    def _get(self):
+        return tmp
 
     def client_send_message(self):
 
         #----- Autour: Ahmed Atallah-------#
 
-        self.connectButton.setCursor(Qt.WaitCursor)
-        time.sleep(1)    #wait 1 second
-        self.connectButton.setCursor(Qt.ArrowCursor)
+        # self.connectButton.setCursor(Qt.WaitCursor)
+        # time.sleep(1)    #wait 1 second
+        # self.connectButton.setCursor(Qt.ArrowCursor)
 
-        # ip_address = self.my_ip.text()
+        # ip_address = self.lineEdit.text()
         # ip_address = '192.168.43.71'
-        ip_address = '192.168.1.105'
+        ip_address = '192.168.1.104'
         print (ip_address)
-        # nick = self.my_name.text()
-        # nick = nick.replace("#>", "")
-        # rmessage = self.message_edit.toPlainText()
-        # rmessage = rmessage.replace("#>", "")
-        #
-        # rmsg = nick + " : " + ip_address + ":" + rmessage
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # msg_box("", "Socket Created")
         try:
@@ -173,24 +175,23 @@ class Demo(QtGui.QWidget):
         except Exception, e:
             self.msg_box("Connection Refused", "The Address You Are Trying To Reach Is Currently Unavailable")
 
-        timeout = 1
-        begin = time.time()
+        timeout = 2
         all_data = {"User": "", "Temp": "", "Press": "", "Altit": ""}
+        begin = time.time()
+        if all_data:
+            print "Data is being recieved ...."
         while True:
-
-            # if you got some data, then break after timeout
-            if all_data and time.time() - begin > timeout:
-                break
-
-            # if you got no data at all, wait a little longer, twice the timeout
-            elif time.time() - begin > timeout * 2:
-                break
-
             try:
                 client.send('GET')
             except:
-                msg_box("Broken pipe", "Your socket pipe closed")
+                # msg_box("Broken pipe", "Your socket pipe closed")
                 break
+
+            # if you got no data at all, wait a little longer, twice the timeout
+            if time.time() - begin > timeout*2:
+                self.msg_box("time out", "time out no data recieved")
+                break
+            # print time.time()
 
             # recv something
             try:
@@ -198,7 +199,9 @@ class Demo(QtGui.QWidget):
                 i = -1
                 # senss = client.recvfrom(16)
                 sensors_out = client.recvfrom(32)
-                print sensors_out
+                print sensors_out[0]
+
+
 
                 sensor_D = sensors_out[0].split(',')
                 # senss_D = senss[0].split(',')
@@ -206,6 +209,7 @@ class Demo(QtGui.QWidget):
                 # all_D = sensor_D
                 if sensors_out[0] != "":
                     i += 1
+                    # self._get(self,sensor_D[4 * i])
                     all_data['User'] += (sensor_D[4 * i] + ',')
                     all_data['Temp'] += (sensor_D[4 * i + 1] + ',')
                     all_data['Press'] += (sensor_D[4 * i + 2] + ',')
@@ -219,23 +223,11 @@ class Demo(QtGui.QWidget):
 
 
             except:
-                break
-            # sensors_out = client.recvfrom(32)
-            # sensor_D = sensors_out[0].split(',')
-            # all_data['Temp'] += sensor_D[0]
-            # all_data['press'] += sensor_D[1]
-            # all_data['altit'] += sensor_D[2]
-            # temp_value = sensor_D [0]
-            # press_value = sensor_D[1]
-            # altit_value = sensor_D[2]
+                pass
 
 
-            if (sensors_out[0] == 'oh'):
-                print "Sorry no sensor data"
-                msg_box("No data", "No Sensor data to be displayed")
-
-        pressAfter = all_data["Press"].split(',')
-        print pressAfter
+        # pressAfter = all_data["Press"].split(',')
+        # print sensors_out[0]
 
         client.close()
 
@@ -273,4 +265,6 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     demo = Demo()
     demo.show()
+    demo.plot_signal()
+    # demo.client_send_message()
     sys.exit(app.exec_())
